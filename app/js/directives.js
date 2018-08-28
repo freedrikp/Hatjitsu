@@ -14,7 +14,7 @@ angular.module('pokerApp.directives', []).
   }]).
   directive('cardvalue', function () {
     return function (scope, elm, attrs) {
-      var value = scope.card || scope.vote.vote,
+      var value = (scope.card || scope.vote.vote)[0],
         code = isNaN(parseInt(value, 10)) ? value.charCodeAt() : value;
       elm.addClass('card--' + code);
     };

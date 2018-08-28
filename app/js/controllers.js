@@ -73,8 +73,8 @@ function LobbyCtrl($scope, $location, socket) {
 
 LobbyCtrl.$inject = ['$scope', '$location', 'socket'];
 
-function standardDeviation(values){
-  var avg = average(values);
+function standardDeviation(values, dataFunction){
+  var avg = average(values, dataFunction);
 
   var squareDiffs = values.map(function(value){
     var diff = value - avg;
@@ -82,15 +82,15 @@ function standardDeviation(values){
     return sqrDiff;
   });
 
-  var avgSquareDiff = average(squareDiffs);
+  var avgSquareDiff = average(squareDiffs, dataFunction);
 
   var stdDev = Math.sqrt(avgSquareDiff);
   return stdDev;
 }
 
-function average(data){
+function average(data, dataFunction){
   var sum = data.reduce(function(sum, value){
-    return sum + parseInt(value);
+    return sum + dataFunction(value);
   }, 0);
 
   var avg = sum / data.length;
@@ -119,21 +119,21 @@ function RoomCtrl($scope, $routeParams, $timeout, socket) {
 
     var voteCount = $scope.votes.length;
     _.each($scope.votes, function (v) {
-      v.visibleVote = v.visibleVote === undefined && (!$scope.forcedReveal && voteCount < $scope.voterCount) ? 'oi!' : v.vote;
+      v.visibleVote = v.visibleVote === undefined && (!$scope.forcedReveal && voteCount < $scope.voterCount) ? 'oi!' : v.vote[1];
     });
     var voteArr = [];
     voteArr.length = $scope.voterCount - voteCount;
     $scope.placeholderVotes = voteArr;
 
 
-    var total =  _.reduce(_.map(_.pluck($scope.votes, 'vote'), parseFloat), sumOfTwo, 0);
-    $scope.votingAverage = Math.round(total / $scope.votes.length);
-    $scope.votingStandardDeviation = standardDeviation(_.pluck($scope.votes, 'vote'), parseFloat);
+    var total =  _.reduce(_.map(_.pluck(_.pluck($scope.votes, 'vote'), '1'), parseFloat), sumOfTwo, 0);
+    $scope.votingAverage = total / $scope.votes.length;
+    $scope.votingStandardDeviation = standardDeviation(_.pluck(_.pluck($scope.votes, 'vote'), '1'), parseFloat);
 
     $scope.forceRevealDisable = (!$scope.forcedReveal && ($scope.votes.length < $scope.voterCount || $scope.voterCount === 0)) ? false : true;
 
     if ($scope.votes.length === $scope.voterCount || $scope.forcedReveal) {
-      var uniqVotes = _.chain($scope.votes).pluck('vote').uniq().value().length;
+      var uniqVotes = _.chain(_.pluck(_.pluck($scope.votes, 'vote'), '1')).uniq().value().length;
       if (uniqVotes === 1) {
         $scope.$emit('unanimous vote');
       } else if (uniqVotes === $scope.voterCount) {
@@ -198,27 +198,18 @@ function RoomCtrl($scope, $routeParams, $timeout, socket) {
   };
 
   var chooseCardPack = function (val) {
-    var fib = ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89', '?'];
-    var goat = ['0', '\u00BD', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?', '\u2615'];
-    var gpust = ['0', '\u00BD', '1', '2', '3', '5', 'Split', '?', '\u2615'];
-    var seq = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '?'];
-    var play = ['A\u2660', '2', '3', '5', '8', '\u2654'];
-    var tshirt = ['XL', 'L', 'M', 'S', 'XS', '?'];
-    switch (val) {
-    case ('fib'):
-      return fib;
-    case ('goat'):
-      return goat;
-    case ('seq'):
-      return seq;
-    case ('play'):
-      return play;
-    case ('tshirt'):
-      return tshirt;
-    case ('gpust'):
-      return gpust;
-    default:
-      return [];
+    var packs = {
+      'fib': [['0', 0], ['1', 1], ['2', 2], ['3', 3], ['5', 5], ['8', 8], ['13', 13], ['21', 21], ['34', 34], ['55', 55], ['89', 89], ['?', '_']],
+      'goat': [['0', 0], ['\u00BD', 0.5], ['1', 1], ['2', 2], ['3', 3], ['5', 5], ['8', 8], ['13', 13], ['20', 20], ['40', 40], ['100', 100], ['?', '_'], ['\u2615', '__']],
+      'gpust': [['0', 0], ['\u00BD', 0.5], ['1', 1], ['2', 2], ['3', 3], ['5', 5], ['Split', '_'], ['?', '__'], ['\u2615', '___']],
+      'seq': [['0', 0], ['1', 1], ['2', 2], ['3', 3], ['4', 4], ['5', 5], ['6', 6], ['7', 7], ['8', 8], ['9', 9], ['10', 10], ['?', '_']],
+      'play': [['A\u2660', '_'], ['2', 2], ['3', 3], ['5', 5], ['8', 8], ['\u2654', '__']],
+      'tshirt': [['XL', '_'], ['L', '__'], ['M', '___'], ['S', '____'], ['XS', '_____'], ['?', '______']]
+    };
+    if (packs.hasOwnProperty(val)) {
+      return packs[val];
+    } else {
+      return {};
     }
   };
 

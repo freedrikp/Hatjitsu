@@ -30,8 +30,8 @@
 
 
     <div class="cards{{cardsState}}">
-      <div ng-show="cards" ng-repeat="card in cards" ng-click="vote(card)" class="card" ng-class="{'card--selected' : card==myVote}" cardvalue>
-        {{card}}
+      <div ng-show="cards" ng-repeat="card in cards" ng-click="vote(card)" class="card" ng-class="{'card--selected' : card[1]==myVote[1]}" cardvalue>
+        {{card[0]}}
       </div>
       <div ng-hide="cards" class="waiting">
         No cards found
@@ -57,7 +57,7 @@
       <div ng-switch-when="true">
         <div ng-switch on="voted">
           <p ng-switch-when="false">You haven't estimated yet</p>
-          <p ng-switch-when="true">Your current estimate: <b>{{myVote}}</b></p>
+          <p ng-switch-when="true">Your current estimate: <b>{{myVote[0]}}</b></p>
         </div>
       </div>
 
