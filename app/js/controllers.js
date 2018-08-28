@@ -146,6 +146,8 @@ function RoomCtrl($scope, $routeParams, $timeout, socket) {
     } else {
       $scope.$emit('unfinished vote');
     }
+
+    $scope.finishedVoting = votingFinished();
   };
 
   var myConnectionHash = function () {
