@@ -119,7 +119,7 @@ function RoomCtrl($scope, $routeParams, $timeout, socket) {
 
     var voteCount = $scope.votes.length;
     _.each($scope.votes, function (v) {
-      v.visibleVote = v.visibleVote === undefined && (!$scope.forcedReveal && voteCount < $scope.voterCount) ? 'oi!' : v.vote[1];
+      v.visibleVote = v.visibleVote === undefined && (!$scope.forcedReveal && voteCount < $scope.voterCount) ? 'oi!' : v.vote[0];
     });
     var voteArr = [];
     voteArr.length = $scope.voterCount - voteCount;
