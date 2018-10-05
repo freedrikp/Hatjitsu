@@ -97,6 +97,30 @@ function average(data, dataFunction){
   return avg;
 }
 
+function majority(data){
+  var count = {};
+  var maxCount = 0;
+  for (var vote of data){
+    if (count.hasOwnProperty(vote)){
+      count[vote]++;
+    }else{
+      count[vote] = 1;
+    }
+    if (count[vote] > maxCount){
+      maxCount = count[vote];
+    }
+  }
+
+  var maxVotes = [];
+  for (var vote in count){
+    if (count[vote] === maxCount){
+      maxVotes.push(vote);
+    }
+  }
+
+  return maxVotes;
+}
+
 function RoomCtrl($scope, $routeParams, $timeout, socket) {
 
   var processMessage = function (response, process) {
@@ -129,6 +153,7 @@ function RoomCtrl($scope, $routeParams, $timeout, socket) {
     var total =  _.reduce(_.map(_.pluck(_.pluck($scope.votes, 'vote'), '1'), parseFloat), sumOfTwo, 0);
     $scope.votingAverage = total / $scope.votes.length;
     $scope.votingStandardDeviation = standardDeviation(_.pluck(_.pluck($scope.votes, 'vote'), '1'), parseFloat);
+    $scope.votingMajority = average(majority(_.pluck(_.pluck($scope.votes, 'vote'), '1')), parseFloat);
 
     $scope.forceRevealDisable = (!$scope.forcedReveal && ($scope.votes.length < $scope.voterCount || $scope.voterCount === 0)) ? false : true;
 
